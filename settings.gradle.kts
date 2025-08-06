@@ -4,3 +4,4 @@ plugins {
 
 rootProject.name = "searchql"
 
+include("core", "jpa")
