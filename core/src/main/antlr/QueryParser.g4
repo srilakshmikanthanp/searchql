@@ -11,6 +11,9 @@ expression:
     // Function call
     | identifier = IDENTIFIER LPARENTHESES (arguments += expression (COMMA arguments += expression)*)? RPARENTHESES # FunctionCall
 
+    // Object Access
+    | base = expression DOT member = IDENTIFIER # ObjectAccess
+
     // Unary operators
     | PLUS operand = expression  # UnaryPlus
     | MINUS operand = expression # UnaryMinus
@@ -41,9 +44,6 @@ expression:
     // Logical operators
     | left = expression AND right = expression # And
     | left = expression OR right = expression  # Or
-
-    // Object Access
-    | base = expression DOT member = IDENTIFIER # ObjectAccess
 
     // Literals
     | OCTAL_INTEGER_LITERAL        # OctalIntegerLiteral
