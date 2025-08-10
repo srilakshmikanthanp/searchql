@@ -10,8 +10,8 @@ import com.srilakshmikanthanp.searchql.jpa.extensions.isAssociation
 import com.srilakshmikanthanp.searchql.jpa.extensions.isRestricted
 import com.srilakshmikanthanp.searchql.jpa.extensions.isRestrictedAttribute
 import com.srilakshmikanthanp.searchql.jpa.node.*
-import com.srilakshmikanthanp.searchql.jpa.restriction.SearchQLRestrictedAttributeException
-import com.srilakshmikanthanp.searchql.jpa.restriction.SearchQLRestrictedEntityException
+import com.srilakshmikanthanp.searchql.jpa.restriction.SearchQlRestrictedAttributeException
+import com.srilakshmikanthanp.searchql.jpa.restriction.SearchQlRestrictedEntityException
 import jakarta.persistence.EntityManager
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.From
@@ -214,7 +214,7 @@ class JpaQueryTransformVisitor<T>(
     val property = ctx.text
 
     if (metamodel.isRestricted()) {
-      throw SearchQLRestrictedEntityException("Access to the entity type '${metamodel.javaType.name}' is restricted")
+      throw SearchQlRestrictedEntityException("Access to the entity type '${metamodel.javaType.name}' is restricted")
     }
 
     if (!metamodel.hasProperty(property)) {
@@ -222,7 +222,7 @@ class JpaQueryTransformVisitor<T>(
     }
 
     if (metamodel.isRestrictedAttribute(property)) {
-      throw SearchQLRestrictedAttributeException("Access to the field '$property' is restricted in ${metamodel.javaType.name}")
+      throw SearchQlRestrictedAttributeException("Access to the field '$property' is restricted in ${metamodel.javaType.name}")
     }
 
     return if (metamodel.isAssociation(property)) {
@@ -243,7 +243,7 @@ class JpaQueryTransformVisitor<T>(
     }
 
     if (metamodel.isRestricted()) {
-      throw SearchQLRestrictedEntityException("Access to the entity type '${metamodel.javaType.name}' is restricted")
+      throw SearchQlRestrictedEntityException("Access to the entity type '${metamodel.javaType.name}' is restricted")
     }
 
     if (!metamodel.hasProperty(property)) {
@@ -251,7 +251,7 @@ class JpaQueryTransformVisitor<T>(
     }
 
     if (metamodel.isRestrictedAttribute(property)) {
-      throw SearchQLRestrictedAttributeException("Access to the field '$property' is restricted in ${metamodel.javaType.name}")
+      throw SearchQlRestrictedAttributeException("Access to the field '$property' is restricted in ${metamodel.javaType.name}")
     }
 
     val nextPath = if (metamodel.isAssociation(property)) {

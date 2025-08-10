@@ -1,7 +1,7 @@
 package com.srilakshmikanthanp.searchql.jpa.extensions
 
-import com.srilakshmikanthanp.searchql.jpa.restriction.SearchQLRestrictedEntity
-import com.srilakshmikanthanp.searchql.jpa.restriction.SearchQLRestrictedAttribute
+import com.srilakshmikanthanp.searchql.jpa.restriction.SearchQlRestrictedEntity
+import com.srilakshmikanthanp.searchql.jpa.restriction.SearchQlRestrictedAttribute
 import jakarta.persistence.metamodel.*
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -15,15 +15,15 @@ fun <T> ManagedType<T>.isAssociation(name: String): Boolean {
 }
 
 fun <T> ManagedType<T>.isRestricted(): Boolean {
-  return this.javaType.isAnnotationPresent(SearchQLRestrictedEntity::class.java)
+  return this.javaType.isAnnotationPresent(SearchQlRestrictedEntity::class.java)
 }
 
 fun <T> ManagedType<T>.isRestrictedAttribute(name: String): Boolean {
   val attribute = this.getAttribute(name)
   val member = attribute.javaMember
   return when (member) {
-    is Method -> member.isAnnotationPresent(SearchQLRestrictedAttribute::class.java)
-    is Field -> member.isAnnotationPresent(SearchQLRestrictedAttribute::class.java)
+    is Method -> member.isAnnotationPresent(SearchQlRestrictedAttribute::class.java)
+    is Field -> member.isAnnotationPresent(SearchQlRestrictedAttribute::class.java)
     else -> false
   }
 }

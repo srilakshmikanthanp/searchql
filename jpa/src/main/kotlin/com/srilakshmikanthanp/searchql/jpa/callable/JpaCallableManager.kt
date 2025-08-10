@@ -5,4 +5,5 @@ interface JpaCallableManager: JpaCallableProvider {
   fun unregisterCallable(name: String)
   fun hasCallable(name: String): Boolean
   fun clearCallables()
+  fun getCallableNames(): Set<String>
 }

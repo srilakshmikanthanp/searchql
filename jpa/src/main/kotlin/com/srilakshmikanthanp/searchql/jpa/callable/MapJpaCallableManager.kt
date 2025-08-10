@@ -1,5 +1,7 @@
 package com.srilakshmikanthanp.searchql.jpa.callable
 
+import com.srilakshmikanthanp.searchql.jpa.callable.builtin.ConcatCallable
+import com.srilakshmikanthanp.searchql.jpa.callable.builtin.LengthCallable
 import java.util.Optional
 
 class MapJpaCallableManager: JpaCallableManager {
@@ -23,7 +25,20 @@ class MapJpaCallableManager: JpaCallableManager {
     callables.clear()
   }
 
+  override fun getCallableNames(): Set<String> {
+    return callables.keys
+  }
+
   override fun getCallable(name: String): Optional<JpaCallable<*>> {
     return Optional.ofNullable(callables[name])
+  }
+
+  companion object {
+    fun withBuiltIns(): MapJpaCallableManager {
+      return MapJpaCallableManager().apply {
+        registerCallable("length", LengthCallable())
+        registerCallable("concat", ConcatCallable())
+      }
+    }
   }
 }

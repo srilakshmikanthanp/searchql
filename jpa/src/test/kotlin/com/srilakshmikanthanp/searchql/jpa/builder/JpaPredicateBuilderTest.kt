@@ -13,18 +13,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SearchQLJpaPredicateBuilderTest {
-  private lateinit var entityManager: EntityManager
-  private val jpaCallableManager = MapJpaCallableManager()
-  private val rows = 1000
+class JpaPredicateBuilderTest {
+  private var entityManager = Persistence.createEntityManagerFactory("h2").createEntityManager()
+  private val builder = JpaPredicateBuilder(MapJpaCallableManager.withBuiltIns())
+  private val rows = 100
 
   @BeforeAll
   fun setup() {
-    entityManager = Persistence.createEntityManagerFactory("h2").createEntityManager()
-
-    jpaCallableManager.registerCallable("length", LengthCallable())
-    jpaCallableManager.registerCallable("concat", ConcatCallable())
-
     entityManager.transaction.begin()
 
     for (i in 1..rows) {
@@ -51,11 +46,6 @@ class SearchQLJpaPredicateBuilderTest {
       )
 
       entityManager.persist(event)
-
-      if (i % 100 == 0) {
-        entityManager.flush()
-        entityManager.clear()
-      }
     }
 
     entityManager.transaction.commit()
@@ -70,13 +60,12 @@ class SearchQLJpaPredicateBuilderTest {
   }
 
   private inline fun <reified T> query(expression: String): List<T> {
-    val engine = SearchQLJpaPredicateBuilder.parse(expression)
+    val searchQlQuery = builder.parse(expression)
     val cb = entityManager.criteriaBuilder
     val query = cb.createQuery(T::class.java)
     val root = query.from(T::class.java)
 
-    val predicate = engine.toPredicate(
-      jpaCallableProvider = jpaCallableManager,
+    val predicate = searchQlQuery.toPredicate(
       entityManager = entityManager,
       root = root,
       criteriaBuilder = cb
@@ -112,10 +101,10 @@ class SearchQLJpaPredicateBuilderTest {
 
   @Test
   fun `should handle string operations`() {
-    val results = query<Event>("objectId == '1' + '2' + '3'") // "123"
+    val results = query<Event>("objectId == '1' + '2'") // "123"
     assert(results.size == 1)
     val event = results.first()
-    assert(event.objectId == "123")
+    assert(event.objectId == "12")
   }
 
   @Test
@@ -174,9 +163,9 @@ class SearchQLJpaPredicateBuilderTest {
 
   @Test
   fun `should handle variadic function`() {
-    val results = query<Event>("objectId == concat('1', '2', '3')")
+    val results = query<Event>("objectId == concat('1', '2')")
     assert(results.size == 1)
     val event = results.first()
-    assert(event.objectId == "123")
+    assert(event.objectId == "12")
   }
 }

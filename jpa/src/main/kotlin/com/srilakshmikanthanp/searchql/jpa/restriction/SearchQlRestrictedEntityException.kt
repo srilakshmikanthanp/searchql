@@ -1,6 +1,6 @@
 package com.srilakshmikanthanp.searchql.jpa.restriction
 
-class SearchQLRestrictedEntityException(
+class SearchQlRestrictedEntityException(
   message: String = "Restricted attribute",
   cause: Throwable? = null
 ) : Exception(message, cause)

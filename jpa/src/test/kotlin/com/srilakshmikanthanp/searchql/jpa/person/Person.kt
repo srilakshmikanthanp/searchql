@@ -1,7 +1,7 @@
 package com.srilakshmikanthanp.searchql.jpa.person
 
 
-import com.srilakshmikanthanp.searchql.jpa.restriction.SearchQLRestrictedAttribute
+import com.srilakshmikanthanp.searchql.jpa.restriction.SearchQlRestrictedAttribute
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
@@ -26,7 +26,7 @@ class Person(
   @Column(nullable = false)
   var email: String,
 
-  @SearchQLRestrictedAttribute
+  @SearchQlRestrictedAttribute
   @Column(nullable = false)
   var password: String,
 

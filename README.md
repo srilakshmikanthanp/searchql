@@ -167,20 +167,19 @@ class Event (
 
 </details>
 
-You can use the `SearchQL` class to create a search query for these entities. Here's an example of how to use it:
+Here's an example of how to use it:
 
 ```kotlin
-// Fields start from root entity
-val builder = SearchQLJpaPredicateBuilder.parse("operation =='CLICK' and person.firstName == 'John' and person.lastName == 'Doe'")
-val jpaCallableManager = MapJpaCallableManager() // You can register custom functions that extend JpaCallable with it
+val jpaCallableManager = MapJpaCallableManager().apply { registerCallable("length", LengthCallable()) }
+val builder = JpaPredicateBuilder(jpaCallableManager)
+val searchQlQuery = builder.parse("operation =='CLICK' and person.firstName == 'John' and person.lastName == 'Doe' and length(message) > 10")
 val entityManager = Persistence.createEntityManagerFactory("h2").createEntityManager()
 val cb = entityManager.criteriaBuilder
 val query = cb.createQuery(Event::class.java)
 val root = query.from(Event::class.java)
 
-val predicate = builder.toPredicate(
-  jpaCallableProvider = jpaCallableManager,   
-  entityManager = entityManager,   
+val predicate = searchQlQuery.toPredicate(
+  entityManager = entityManager,
   root = root,
   criteriaBuilder = cb
 )
@@ -190,8 +189,8 @@ query.where(predicate)
 val results = entityManager.createQuery(query).resultList
 ```
 
-you can restrict the search query by annotating the attributes in your JPA entities with `@SearchQLRestrictedAttribute` 
-or entire Entity with `@SearchQLRestrictedEntity`. This will prevent the user from searching on those entries.
+you can restrict the search query by annotating the attributes in your JPA entities with `@SearchQlRestrictedAttribute` 
+or entire Entity with `@SearchQlRestrictedEntity`. This will prevent the user from searching on those entries.
 
 ## Grammar
 
