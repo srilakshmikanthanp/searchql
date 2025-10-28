@@ -4,7 +4,7 @@ import jakarta.persistence.criteria.Predicate
 
 class JpaPredicateNode(
   val predicate: Predicate
-) : JpaExpressionNode<Boolean>(
+) : JpaExpressionBooleanNode(
   expression = predicate
 )
 

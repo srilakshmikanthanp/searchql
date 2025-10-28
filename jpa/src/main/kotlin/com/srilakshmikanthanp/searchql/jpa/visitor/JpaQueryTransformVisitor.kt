@@ -24,28 +24,19 @@ class JpaQueryTransformVisitor<T>(
   private val criteriaBuilder: CriteriaBuilder,
 ): QueryParserBaseVisitor<JpaNode>() {
   override fun visitMultiplication(ctx: QueryParser.MultiplicationContext): JpaNode {
-    val left = ctx.left.accept(this).asExpressionNode().asType<Number>()
-    val right = ctx.right.accept(this).asExpressionNode().asType<Number>()
-    val result = criteriaBuilder.prod(left.expression, right.expression)
-    return JpaExpressionNode(result)
+    return ctx.left.accept(this).asMultipliableNode().multiply(criteriaBuilder, ctx.right.accept(this))
   }
 
   override fun visitOr(ctx: QueryParser.OrContext): JpaNode {
-    val left = ctx.left.accept(this).asExpressionNode().asType<Boolean>()
-    val right = ctx.right.accept(this).asExpressionNode().asType<Boolean>()
-    val result = criteriaBuilder.or(left.expression, right.expression)
-    return JpaPredicateNode(result)
+    return ctx.left.accept(this).asOrNode().or(criteriaBuilder, ctx.right.accept(this))
   }
 
   override fun visitNumericLiteral(ctx: QueryParser.NumericLiteralContext): JpaNode {
-    return JpaExpressionNode(criteriaBuilder.literal(ctx.text.toDouble()))
+    return JpaExpressionDoubleNode(criteriaBuilder.literal(ctx.text.toDouble()))
   }
 
   override fun visitLessThanOrEqual(ctx: QueryParser.LessThanOrEqualContext): JpaNode {
-    val left = ctx.left.accept(this).asExpressionNode().asType<Number>()
-    val right = ctx.right.accept(this).asExpressionNode().asType<Number>()
-    val result = criteriaBuilder.le(left.expression, right.expression)
-    return JpaExpressionNode(result)
+    return ctx.left.accept(this).asLteNode().lte(criteriaBuilder, ctx.right.accept(this))
   }
 
   override fun visitIn(ctx: QueryParser.InContext): JpaNode {
@@ -67,54 +58,39 @@ class JpaQueryTransformVisitor<T>(
   }
 
   override fun visitExponentiation(ctx: QueryParser.ExponentiationContext): JpaNode {
-    val left = ctx.left.accept(this).asExpressionNode().asType<Number>()
-    val right = ctx.right.accept(this).asExpressionNode().asType<Number>()
-    val result = criteriaBuilder.power(left.expression, right.expression)
-    return JpaExpressionNode(result)
+    return ctx.left.accept(this).asPowerNode().power(criteriaBuilder, ctx.right.accept(this))
   }
 
   override fun visitGreaterThanOrEqual(ctx: QueryParser.GreaterThanOrEqualContext): JpaNode {
-    val left = ctx.left.accept(this).asExpressionNode().asType<Number>()
-    val right = ctx.right.accept(this).asExpressionNode().asType<Number>()
-    val result = criteriaBuilder.ge(left.expression, right.expression)
-    return JpaPredicateNode(result)
+    return ctx.left.accept(this).asGteNode().gte(criteriaBuilder, ctx.right.accept(this))
   }
 
   override fun visitFalseLiteral(ctx: QueryParser.FalseLiteralContext): JpaNode {
-    return JpaExpressionNode(criteriaBuilder.literal(false))
+    return JpaExpressionBooleanNode(criteriaBuilder.literal(false))
   }
 
   override fun visitSingleQuotedStringLiteral(ctx: QueryParser.SingleQuotedStringLiteralContext): JpaNode {
-    return JpaExpressionNode(criteriaBuilder.literal(ctx.text.removeSurrounding(SINGLE_QUOTE, SINGLE_QUOTE)))
+    return JpaExpressionStringNode(criteriaBuilder.literal(ctx.text.removeSurrounding(SINGLE_QUOTE, SINGLE_QUOTE)))
   }
 
   override fun visitLessThan(ctx: QueryParser.LessThanContext): JpaNode {
-    val left = ctx.left.accept(this).asExpressionNode().asType<Number>()
-    val right = ctx.right.accept(this).asExpressionNode().asType<Number>()
-    val result = criteriaBuilder.lt(left.expression, right.expression)
-    return JpaPredicateNode(result)
+    return ctx.left.accept(this).asLtNode().lt(criteriaBuilder, ctx.right.accept(this))
   }
 
   override fun visitBinaryIntegerLiteral(ctx: QueryParser.BinaryIntegerLiteralContext): JpaNode {
-    return JpaExpressionNode(criteriaBuilder.literal(ctx.text.toInt(2)))
+    return JpaExpressionIntegerNode(criteriaBuilder.literal(ctx.text.toInt(2)))
   }
 
   override fun visitTrueLiteral(ctx: QueryParser.TrueLiteralContext): JpaNode {
-    return JpaExpressionNode(criteriaBuilder.literal(true))
+    return JpaExpressionBooleanNode(criteriaBuilder.literal(true))
   }
 
   override fun visitGreaterThan(ctx: QueryParser.GreaterThanContext): JpaNode {
-    val left = ctx.left.accept(this).asExpressionNode().asType<Number>()
-    val right = ctx.right.accept(this).asExpressionNode().asType<Number>()
-    val result = criteriaBuilder.gt(left.expression, right.expression)
-    return JpaPredicateNode(result)
+    return ctx.left.accept(this).asGtNode().gt(criteriaBuilder, ctx.right.accept(this))
   }
 
   override fun visitDivision(ctx: QueryParser.DivisionContext): JpaNode {
-    val left = ctx.left.accept(this).asExpressionNode().asType<Number>()
-    val right = ctx.right.accept(this).asExpressionNode().asType<Number>()
-    val result = criteriaBuilder.quot(left.expression, right.expression)
-    return JpaExpressionNode(result)
+    return ctx.left.accept(this).asDividableNode().divide(criteriaBuilder, ctx.right.accept(this))
   }
 
   override fun visitSubExpression(ctx: QueryParser.SubExpressionContext): JpaNode {
@@ -122,62 +98,31 @@ class JpaQueryTransformVisitor<T>(
   }
 
   override fun visitOctalIntegerLiteral(ctx: QueryParser.OctalIntegerLiteralContext): JpaNode {
-    return JpaExpressionNode(criteriaBuilder.literal(ctx.text.toInt(8)))
+    return JpaExpressionIntegerNode(criteriaBuilder.literal(ctx.text.toInt(8)))
   }
 
   override fun visitAddition(ctx: QueryParser.AdditionContext): JpaNode {
-    val left = ctx.left.accept(this).asExpressionNode()
-    val right = ctx.right.accept(this).asExpressionNode()
-
-    if (!left.isTypeOf(String::class.java, Number::class.java)) {
-      throw JpaExpressionNodeTypeMismatchException(
-        expectedTypes = arrayOf(String::class.java, Number::class.java),
-        actualType = left.expression.javaType
-      )
-    }
-
-    if (!right.isTypeOf(String::class.java, Number::class.java)) {
-      throw JpaExpressionNodeTypeMismatchException(
-        expectedTypes = arrayOf(String::class.java, Number::class.java),
-        actualType = right.expression.javaType
-      )
-    }
-
-    return if (left.isTypeOf(Number::class.java)) {
-      JpaExpressionNode(criteriaBuilder.sum(left.asType<Number>().expression, right.asType<Number>().expression))
-    } else {
-      JpaExpressionNode(criteriaBuilder.concat(left.asType<String>().expression, right.asType<String>().expression))
-    }
+    return ctx.left.accept(this).asAddableNode().add(criteriaBuilder, ctx.right.accept(this))
   }
 
   override fun visitModulo(ctx: QueryParser.ModuloContext): JpaNode {
-    val left = ctx.left.accept(this).asExpressionNode().asType<Int>()
-    val right = ctx.right.accept(this).asExpressionNode().asType<Int>()
-    val result = criteriaBuilder.mod(left.expression, right.expression)
-    return JpaExpressionNode(result)
+    return ctx.left.accept(this).asModuloNode().modulo(criteriaBuilder, ctx.right.accept(this))
   }
 
   override fun visitUnaryMinus(ctx: QueryParser.UnaryMinusContext): JpaNode {
-    val expression = ctx.expression().accept(this).asExpressionNode().asType<Number>()
-    val result = criteriaBuilder.neg(expression.expression)
-    return JpaExpressionNode(result)
+    return ctx.expression().accept(this).asUnaryMinusNode().unaryMinus(criteriaBuilder)
   }
 
   override fun visitNotEquals(ctx: QueryParser.NotEqualsContext): JpaNode {
-    val left = ctx.left.accept(this).asExpressionNode()
-    val right = ctx.right.accept(this).asExpressionNode()
-    val result = criteriaBuilder.notEqual(left.expression, right.expression)
-    return JpaPredicateNode(result)
+    return ctx.left.accept(this).asNotEqNode().notEq(criteriaBuilder, ctx.right.accept(this))
   }
 
   override fun visitHexIntegerLiteral(ctx: QueryParser.HexIntegerLiteralContext): JpaNode {
-    return JpaExpressionNode(criteriaBuilder.literal(ctx.text.toInt(16)))
+    return JpaExpressionIntegerNode(criteriaBuilder.literal(ctx.text.toInt(16)))
   }
 
   override fun visitNot(ctx: QueryParser.NotContext): JpaNode {
-    val element = ctx.expression().accept(this).asExpressionNode().asType<Boolean>()
-    val result = criteriaBuilder.not(element.expression)
-    return JpaPredicateNode(result)
+    return ctx.expression().accept(this).asNotNode().not(criteriaBuilder)
   }
 
   override fun visitEquals(ctx: QueryParser.EqualsContext): JpaNode {
@@ -188,21 +133,15 @@ class JpaQueryTransformVisitor<T>(
   }
 
   override fun visitSubtraction(ctx: QueryParser.SubtractionContext): JpaNode {
-    val left = ctx.left.accept(this).asExpressionNode().asType<Number>()
-    val right = ctx.right.accept(this).asExpressionNode().asType<Number>()
-    val result = criteriaBuilder.diff(left.expression, right.expression)
-    return JpaExpressionNode(result)
+    return ctx.left.accept(this).asSubtractableNode().subtract(criteriaBuilder, ctx.right.accept(this))
   }
 
   override fun visitAnd(ctx: QueryParser.AndContext): JpaNode {
-    val left = ctx.left.accept(this).asExpressionNode().asType<Boolean>()
-    val right = ctx.right.accept(this).asExpressionNode().asType<Boolean>()
-    val result = criteriaBuilder.and(left.expression, right.expression)
-    return JpaPredicateNode(result)
+    return ctx.left.accept(this).asAndNode().and(criteriaBuilder, ctx.right.accept(this))
   }
 
   override fun visitDoubleQuotedStringLiteral(ctx: QueryParser.DoubleQuotedStringLiteralContext): JpaNode {
-    return JpaExpressionNode(criteriaBuilder.literal(ctx.text.removeSurrounding(DOUBLE_QUOTE, DOUBLE_QUOTE)))
+    return JpaExpressionStringNode(criteriaBuilder.literal(ctx.text.removeSurrounding(DOUBLE_QUOTE, DOUBLE_QUOTE)))
   }
 
   override fun visitNullLiteral(ctx: QueryParser.NullLiteralContext?): JpaNode {

@@ -1,8 +1,33 @@
 package com.srilakshmikanthanp.searchql.jpa.node
 
+import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Expression
 
-open class JpaExpressionNode<T>(val expression: Expression<T>): JpaNode
+open class JpaExpressionNode<T>(open val expression: Expression<T>): JpaNode, JpaEqNode, JpaNotEqNode {
+  override fun eq(
+    cb: CriteriaBuilder,
+    other: JpaNode
+  ): JpaNode {
+    cb.equal(
+      this.expression,
+      other.asExpressionNode().expression
+    ).let {
+      return JpaPredicateNode(it)
+    }
+  }
+
+  override fun notEq(
+    cb: CriteriaBuilder,
+    other: JpaNode
+  ): JpaNode {
+    cb.notEqual(
+      this.expression,
+      other.asExpressionNode().expression
+    ).let {
+      return JpaPredicateNode(it)
+    }
+  }
+}
 
 fun JpaNode.asExpressionNode(): JpaExpressionNode<*> {
   if (this !is JpaExpressionNode<*>) {
