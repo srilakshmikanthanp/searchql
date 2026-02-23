@@ -4,11 +4,13 @@ import com.srilakshmikanthanp.searchql.jpa.JpaPredicateBuilder
 import com.srilakshmikanthanp.searchql.jpa.callable.MapJpaCallableManager
 import com.srilakshmikanthanp.searchql.jpa.event.Event
 import com.srilakshmikanthanp.searchql.jpa.person.Person
+import com.srilakshmikanthanp.searchql.jpa.restriction.SearchQlRestrictedAttributeException
 import jakarta.persistence.Persistence
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.assertThrows
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class JpaPredicateBuilderTest {
@@ -165,5 +167,10 @@ class JpaPredicateBuilderTest {
     assert(results.size == 1)
     val event = results.first()
     assert(event.objectId == "12")
+  }
+
+  @Test
+  fun `should throw for accessing restricted attribute`() {
+    assertThrows<SearchQlRestrictedAttributeException> { query<Person>("password == 'password'") }
   }
 }
