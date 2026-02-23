@@ -3,8 +3,8 @@ package com.srilakshmikanthanp.searchql.jpa.callable.builtin
 import com.srilakshmikanthanp.searchql.jpa.callable.JpaCallable
 import com.srilakshmikanthanp.searchql.jpa.callable.JpaCallableArgument
 import com.srilakshmikanthanp.searchql.jpa.callable.JpaCallableArgumentVariadic
-import com.srilakshmikanthanp.searchql.jpa.node.JpaExpressionNode
-import com.srilakshmikanthanp.searchql.jpa.node.asType
+import com.srilakshmikanthanp.searchql.jpa.transform.JpaExpressionNode
+import com.srilakshmikanthanp.searchql.jpa.transform.asType
 import jakarta.persistence.criteria.CriteriaBuilder
 
 class LengthCallable : JpaCallable<Int> {

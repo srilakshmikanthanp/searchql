@@ -1,8 +1,7 @@
 package com.srilakshmikanthanp.searchql.jpa.callable
 
-import com.srilakshmikanthanp.searchql.jpa.node.JpaExpressionNode
+import com.srilakshmikanthanp.searchql.jpa.transform.JpaExpressionNode
 import jakarta.persistence.criteria.CriteriaBuilder
-import jakarta.persistence.criteria.Expression
 
 interface JpaCallable<T> {
   /**

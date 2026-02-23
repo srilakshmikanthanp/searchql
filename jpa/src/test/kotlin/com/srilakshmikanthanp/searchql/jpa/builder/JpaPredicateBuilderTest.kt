@@ -1,11 +1,9 @@
 package com.srilakshmikanthanp.searchql.jpa.builder
 
+import com.srilakshmikanthanp.searchql.jpa.JpaPredicateBuilder
 import com.srilakshmikanthanp.searchql.jpa.callable.MapJpaCallableManager
-import com.srilakshmikanthanp.searchql.jpa.callable.builtin.LengthCallable
-import com.srilakshmikanthanp.searchql.jpa.callable.builtin.ConcatCallable
 import com.srilakshmikanthanp.searchql.jpa.event.Event
 import com.srilakshmikanthanp.searchql.jpa.person.Person
-import jakarta.persistence.EntityManager
 import jakarta.persistence.Persistence
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
