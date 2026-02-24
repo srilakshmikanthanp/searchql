@@ -1,6 +1,5 @@
-package com.srilakshmikanthanp.searchql.jpa.builder
+package com.srilakshmikanthanp.searchql.jpa
 
-import com.srilakshmikanthanp.searchql.jpa.JpaPredicateBuilder
 import com.srilakshmikanthanp.searchql.jpa.callable.MapJpaCallableManager
 import com.srilakshmikanthanp.searchql.jpa.event.Event
 import com.srilakshmikanthanp.searchql.jpa.person.Person
@@ -64,15 +63,8 @@ class JpaPredicateBuilderTest {
     val cb = entityManager.criteriaBuilder
     val query = cb.createQuery(T::class.java)
     val root = query.from(T::class.java)
-
-    val predicate = searchQlQuery.toPredicate(
-      entityManager = entityManager,
-      root = root,
-      criteriaBuilder = cb
-    )
-
+    val predicate = searchQlQuery.toPredicate(entityManager, root, cb)
     query.where(predicate)
-
     return entityManager.createQuery(query).resultList
   }
 
