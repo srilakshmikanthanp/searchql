@@ -13,14 +13,12 @@ import org.junit.jupiter.api.assertThrows
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class JpaPredicateBuilderTest {
-  private var entityManager = Persistence.createEntityManagerFactory("h2").createEntityManager()
+  private val entityManagerFactory = Persistence.createEntityManagerFactory("h2")
+  private val entityManager = entityManagerFactory.createEntityManager()
   private val builder = JpaPredicateBuilder(MapJpaCallableManager.withBuiltIns())
   private val rows = 100
 
-  @BeforeAll
-  fun setup() {
-    entityManager.transaction.begin()
-
+  private fun seed(rows: Int) {
     for (i in 1..rows) {
       val person = Person(
         firstName = "First$i",
@@ -46,16 +44,28 @@ class JpaPredicateBuilderTest {
 
       entityManager.persist(event)
     }
+  }
 
-    entityManager.transaction.commit()
+  @BeforeAll
+  fun setup() {
+    val transaction = entityManager.transaction
+
+    try {
+      transaction.begin()
+      this.seed(this.rows)
+      transaction.commit()
+    } catch (e: Exception) {
+      if (transaction.isActive) {
+        transaction.rollback()
+      }
+      throw e
+    }
   }
 
   @AfterAll
   fun tearDown() {
-    if (entityManager.transaction.isActive) {
-      entityManager.transaction.rollback()
-    }
     entityManager.close()
+    entityManagerFactory.close()
   }
 
   private inline fun <reified T> query(expression: String): List<T> {
