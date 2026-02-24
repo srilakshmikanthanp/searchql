@@ -48,7 +48,7 @@ class JpaQueryTransformVisitor<T>(
   private val criteriaBuilder: CriteriaBuilder,
 ): NodeVisitor<JpaNode> {
   override fun visitUnaryPlus(expression: UnaryPlusNode): JpaNode {
-    return expression.operand.accept(this)
+    return expression.operand.accept(this).asUnaryPlusNode().unaryPlus(criteriaBuilder)
   }
 
   override fun visitMultiplication(node: MultiplicationNode): JpaNode {
@@ -91,42 +91,8 @@ class JpaQueryTransformVisitor<T>(
     return node.left.accept(this).asPowerNode().power(criteriaBuilder, node.right.accept(this))
   }
 
-  override fun visitIdentifier(expression: IdentifierNode): JpaNode {
-    val metamodel = entityManager.metamodel.managedType(root.javaType)
-    val property = expression.name
-
-    this.validateProperty(metamodel, property)
-
-    return if (metamodel.isAssociation(property)) {
-      JpaPathNode(root.join<Any, Any>(property))
-    } else {
-      JpaPathNode(root.get<Any>(property))
-    }
-  }
-
   override fun visitDivision(node: DivisionNode): JpaNode {
     return node.left.accept(this).asDividableNode().divide(criteriaBuilder, node.right.accept(this))
-  }
-
-  override fun visitObjectAccess(node: ObjectAccessNode): JpaNode {
-    val base = node.base.accept(this).asExpressionNode().asPathNode()
-    val property = node.member
-
-    val metamodel = try {
-      entityManager.metamodel.managedType(base.path.javaType)
-    } catch (e: IllegalArgumentException) {
-      throw JpaPathNodeException("Unknown type: ${root.javaType.name}", e)
-    }
-
-    this.validateProperty(metamodel, property)
-
-    val nextPath = if (metamodel.isAssociation(property)) {
-      (base.path as From<*, *>).join<Any, Any>(property)
-    } else {
-      base.path.get(property)
-    }
-
-    return JpaPathNode(nextPath)
   }
 
   override fun visitAdditionNode(node: AdditionNode): JpaNode {
@@ -216,6 +182,40 @@ class JpaQueryTransformVisitor<T>(
     }
 
     return callable.invoke(criteriaBuilder, *arguments.toTypedArray())
+  }
+
+  override fun visitIdentifier(expression: IdentifierNode): JpaNode {
+    val metamodel = entityManager.metamodel.managedType(root.javaType)
+    val property = expression.name
+
+    this.validateProperty(metamodel, property)
+
+    return if (metamodel.isAssociation(property)) {
+      JpaPathNode(root.join<Any, Any>(property))
+    } else {
+      JpaPathNode(root.get<Any>(property))
+    }
+  }
+
+  override fun visitObjectAccess(node: ObjectAccessNode): JpaNode {
+    val base = node.base.accept(this).asExpressionNode().asPathNode()
+    val property = node.member
+
+    val metamodel = try {
+      entityManager.metamodel.managedType(base.path.javaType)
+    } catch (e: IllegalArgumentException) {
+      throw JpaPathNodeException("Unknown type: ${root.javaType.name}", e)
+    }
+
+    this.validateProperty(metamodel, property)
+
+    val nextPath = if (metamodel.isAssociation(property)) {
+      (base.path as From<*, *>).join<Any, Any>(property)
+    } else {
+      base.path.get(property)
+    }
+
+    return JpaPathNode(nextPath)
   }
 
   private fun validateProperty(metamodel: ManagedType<*>, property: String) {
